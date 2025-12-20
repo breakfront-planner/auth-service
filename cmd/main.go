@@ -21,10 +21,9 @@ func main() {
 	defer db.Close()
 	log.Println("DB connected")
 
-	/*
-		if err := database.RunMigrations(db); err != nil {
-			log.Fatal("Failed to run migrations:", err)
-		}
-	*/
+	if err := database.RunMigrations(db); err != nil {
+		log.Fatal("Failed to run migrations:", err)
+	}
+	log.Println("Migrations ok")
 
 }

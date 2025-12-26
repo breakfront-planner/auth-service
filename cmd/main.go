@@ -9,6 +9,8 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/repositories"
 	"github.com/breakfront-planner/auth-service/internal/services"
 
+	"os"
+
 	"github.com/joho/godotenv"
 )
 
@@ -41,10 +43,13 @@ func main() {
 	userService := services.NewUserService(userRepo, hashService)
 	tokenService := services.NewTokenService(tokenRepo, hashService, jwtManager)
 	authService := services.NewAuthService(tokenService, userService)
+	login := os.Getenv("TEST_LOGIN")
+	pass := os.Getenv("TEST_PASS")
 
 	/*
 
-		accessToken, refreshToken, err := authService.Register("test1", "test")
+
+		accessToken, refreshToken, err := authService.Register(login, pass)
 
 		if err != nil {
 			log.Fatal("registration failed: ", err)
@@ -55,7 +60,7 @@ func main() {
 		log.Printf("access token expires at: %v", accessToken.ExpiresAt)
 	*/
 
-	newAccessToken, newRefreshToken, err := authService.Login("test", "test")
+	newAccessToken, newRefreshToken, err := authService.Login(login, pass)
 
 	if err != nil {
 		log.Fatal("login failed: ", err)
@@ -67,7 +72,7 @@ func main() {
 
 	oldRefreshTokenValue := newRefreshToken.Value
 
-	newAccessToken, newRefreshToken, err = authService.Refresh(oldRefreshTokenValue, "test")
+	newAccessToken, newRefreshToken, err = authService.Refresh(oldRefreshTokenValue, login)
 
 	if err != nil {
 		log.Fatal("refresh failed: ", err)

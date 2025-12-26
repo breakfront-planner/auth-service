@@ -7,16 +7,21 @@ const (
         login VARCHAR(255) UNIQUE NOT NULL,
 		password_hash VARCHAR(255) NOT NULL,
         created_at TIMESTAMPTZ DEFAULT now(),
-		updated_at TIMESTAMP DEFAULT now()
+		updated_at TIMESTAMPTZ DEFAULT now()
     );`
 
 	CreateRefreshTokensTable = `
     CREATE TABLE refresh_tokens (
-		token VARCHAR(255) PRIMARY KEY,
+		id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    	token_hash VARCHAR(64) UNIQUE NOT NULL,
 		user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-		expires_at TIMESTAMP NOT NULL,
-		created_at TIMESTAMP DEFAULT now()
-	);`
+		created_at TIMESTAMPTZ DEFAULT now(),
+		expires_at TIMESTAMPTZ NOT NULL,
+		revoked_at TIMESTAMPTZ
+	);
+	
+	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id 
+	ON refresh_tokens(user_id);`
 
 	CreateMigrationsTable = `
     CREATE TABLE IF NOT EXISTS schema_migrations (

@@ -13,6 +13,7 @@ type IUserService interface {
 type ITokenService interface {
 	CreateNewTokenPair(user *models.User) (accessToken, refreshToken *models.Token, err error)
 	Refresh(refreshToken *models.Token, user *models.User) (newAccessToken, newRefreshToken *models.Token, err error)
+	RevokeToken(token *models.Token) error
 }
 
 type AuthService struct {
@@ -77,4 +78,29 @@ func (s *AuthService) Refresh(oldRefreshTokenValue string, login string) (newAcc
 
 	return s.tokenService.Refresh(&oldRefreshToken, user)
 
+}
+
+func (s *AuthService) Logout(refreshToken string, login string) error {
+
+	newUserFilter := models.UserFilter{
+		Login: &login,
+	}
+
+	user, err := s.userService.FindUser(&newUserFilter)
+
+	if err != nil {
+		return err
+	}
+
+	tokenToRevoke := models.Token{
+		UserID: user.ID,
+		Value:  refreshToken,
+	}
+
+	err = s.tokenService.RevokeToken(&tokenToRevoke)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
 	"github.com/breakfront-planner/auth-service/internal/constants"
 	"github.com/breakfront-planner/auth-service/internal/jwt"
@@ -77,4 +79,21 @@ func (s *TokenService) Refresh(refreshToken *models.Token, user *models.User) (n
 
 	return newAccessToken, newRefreshToken, nil
 
+}
+
+func (s *TokenService) RevokeToken(token *models.Token) error {
+
+	token.HashedValue = s.hashService.HashToken(token.Value)
+	err := s.tokenRepo.CheckToken(token)
+	if err != nil {
+		return autherrors.ErrInvalidToken(err)
+	}
+
+	*token.RevokedAt = time.Now().UTC()
+	err = s.tokenRepo.RevokeToken(token)
+	if err != nil {
+		return autherrors.ErrRevokeToken(err)
+	}
+
+	return nil
 }

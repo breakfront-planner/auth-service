@@ -43,22 +43,19 @@ func main() {
 	userService := services.NewUserService(userRepo, hashService)
 	tokenService := services.NewTokenService(tokenRepo, hashService, jwtManager)
 	authService := services.NewAuthService(tokenService, userService)
+
 	login := os.Getenv("TEST_LOGIN")
 	pass := os.Getenv("TEST_PASS")
 
-	/*
+	accessToken, refreshToken, err := authService.Register(login, pass)
 
+	if err != nil {
+		log.Fatal("registration failed: ", err)
+	}
 
-		accessToken, refreshToken, err := authService.Register(login, pass)
-
-		if err != nil {
-			log.Fatal("registration failed: ", err)
-		}
-
-		log.Println("registration success")
-		log.Printf("refresh token expires at: %v", refreshToken.ExpiresAt)
-		log.Printf("access token expires at: %v", accessToken.ExpiresAt)
-	*/
+	log.Println("registration success")
+	log.Printf("refresh token expires at: %v", refreshToken.ExpiresAt)
+	log.Printf("access token expires at: %v", accessToken.ExpiresAt)
 
 	newAccessToken, newRefreshToken, err := authService.Login(login, pass)
 

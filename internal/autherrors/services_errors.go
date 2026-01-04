@@ -45,5 +45,5 @@ func ErrRefreshToken(err error) error {
 }
 
 func ErrRevokeToken(err error) error {
-	return fmt.Errorf("failed to refresh tokens: %w", err)
+	return fmt.Errorf("failed to revoke token: %w", err)
 }

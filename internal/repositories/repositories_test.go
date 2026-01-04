@@ -26,7 +26,7 @@ type RepositoryTestSuite struct {
 
 // SetupSuite runs once before all tests - creates DB connection and runs migrations
 func (s *RepositoryTestSuite) SetupSuite() {
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load("../../.env.test")
 	require.NoError(s.T(), err, "Error loading .env file")
 
 	// Connection string for test database

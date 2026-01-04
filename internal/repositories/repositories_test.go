@@ -19,15 +19,21 @@ import (
 // RepositoryTestSuite is a base test suite for all repository integration tests
 type RepositoryTestSuite struct {
 	suite.Suite
-	DB        *sql.DB
-	UserRepo  *UserRepository
-	TokenRepo *TokenRepository
+	DB           *sql.DB
+	UserRepo     *UserRepository
+	TokenRepo    *TokenRepository
+	TestLogin    string
+	TestPassword string
 }
 
 // SetupSuite runs once before all tests - creates DB connection and runs migrations
 func (s *RepositoryTestSuite) SetupSuite() {
+
 	err := godotenv.Load("../../.env.test")
 	require.NoError(s.T(), err, "Error loading .env file")
+
+	s.TestLogin = os.Getenv("TEST_LOGIN")
+	s.TestPassword = os.Getenv("TEST_PASS")
 
 	// Connection string for test database
 	requiredEnvVars := []string{"TEST_DB_HOST", "TEST_DB_PORT", "TEST_DB_USER", "TEST_DB_PASSWORD", "TEST_DB_NAME", "TEST_DB_SSLMODE"}
@@ -71,24 +77,22 @@ func (s *RepositoryTestSuite) SetupSuite() {
 	// Initialize all repositories
 	s.UserRepo = NewUserRepository(db)
 	s.TokenRepo = NewTokenRepository(db)
+
 }
 
-// TearDownSuite runs once after all tests - closes DB connection
-func (s *RepositoryTestSuite) TearDownSuite() {
-	if s.DB != nil {
-		err := s.DB.Close()
-		require.NoError(s.T(), err, "Failed to close database connection")
-	}
-}
-
-// AfterTest runs after each test - cleans up all data
-func (s *RepositoryTestSuite) AfterTest(suiteName, testName string) {
-	// Delete in correct order due to foreign keys
+func (s *RepositoryTestSuite) TearDownTest() {
 	_, err := s.DB.Exec("DELETE FROM refresh_tokens")
 	require.NoError(s.T(), err, "Failed to cleanup refresh_tokens")
 
 	_, err = s.DB.Exec("DELETE FROM users")
 	require.NoError(s.T(), err, "Failed to cleanup users")
+}
 
-	// Categories are seeded by migrations, we keep them
+// TearDownSuite runs once after all tests - closes DB connection
+func (s *RepositoryTestSuite) TearDownSuite() {
+
+	if s.DB != nil {
+		err := s.DB.Close()
+		require.NoError(s.T(), err, "Failed to close database connection")
+	}
 }

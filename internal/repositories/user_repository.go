@@ -19,7 +19,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 func (r *UserRepository) CreateUser(login string, passHash string) (*models.User, error) {
 	var user models.User
 	query := `
-        INSERT INTO users (login, password_hash) 
+        INSERT INTO users (login, password_hash)
         VALUES ($1, $2)
         RETURNING id, login, password_hash, created_at, updated_at
     `
@@ -35,6 +35,9 @@ func (r *UserRepository) CreateUser(login string, passHash string) (*models.User
 }
 
 func (r *UserRepository) FindUser(filter *models.UserFilter) (*models.User, error) {
+	if filter.ID == nil && filter.Login == nil {
+		return nil, autherrors.ErrFailToFindUser(fmt.Errorf("filter cannot be empty: at least one field must be specified"))
+	}
 
 	query := `SELECT id, login, password_hash, created_at, updated_at FROM users WHERE 1=1`
 	args := []interface{}{}

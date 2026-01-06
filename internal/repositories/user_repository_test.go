@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	//"database/sql"
 	"testing"
 
 	"github.com/google/uuid"
@@ -12,12 +11,10 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/models"
 )
 
-// UserRepositoryTestSuite extends RepositoryTestSuite
 type UserRepositoryTestSuite struct {
 	RepositoryTestSuite
 }
 
-// TestCreateSuccess tests successful user creation
 func (s *UserRepositoryTestSuite) TestCreateSuccess() {
 
 	user, err := s.UserRepo.CreateUser(s.TestLogin, s.TestPassword)
@@ -119,6 +116,12 @@ func (s *UserRepositoryTestSuite) TestFindWithEmptyFilter() {
 	assert.ErrorContains(s.T(), err, "failed to find user")
 	assert.ErrorContains(s.T(), err, "filter cannot be empty")
 	assert.Nil(s.T(), user, "User should be nil when filter is empty")
+}
+
+func (s *UserRepositoryTestSuite) TearDownTest() {
+
+	_, err := s.DB.Exec("DELETE FROM users")
+	require.NoError(s.T(), err, "Failed to cleanup users")
 }
 
 func TestUserRepositoryTestSuite(t *testing.T) {

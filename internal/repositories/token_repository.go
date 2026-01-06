@@ -31,7 +31,7 @@ func (r *TokenRepository) SaveToken(token *models.Token) error {
 
 func (r *TokenRepository) RevokeToken(token *models.Token) error {
 
-	_, err := r.db.Exec(`UPDATE refresh_tokens SET revoked_at = $1 WHERE token_hash = $2`, token.RevokedAt, token.HashedValue)
+	_, err := r.db.Exec(`UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE token_hash = $1`, token.HashedValue)
 	if err != nil {
 		return autherrors.ErrDeleteToken(err)
 	}

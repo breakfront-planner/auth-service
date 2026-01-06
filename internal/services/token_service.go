@@ -1,8 +1,6 @@
 package services
 
 import (
-	"time"
-
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
 	"github.com/breakfront-planner/auth-service/internal/constants"
 	"github.com/breakfront-planner/auth-service/internal/jwt"
@@ -89,7 +87,6 @@ func (s *TokenService) RevokeToken(token *models.Token) error {
 		return autherrors.ErrInvalidToken(err)
 	}
 
-	*token.RevokedAt = time.Now().UTC()
 	err = s.tokenRepo.RevokeToken(token)
 	if err != nil {
 		return autherrors.ErrRevokeToken(err)

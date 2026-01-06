@@ -29,7 +29,7 @@ func ErrDBTransactionFailed(err error) error {
 }
 
 func ErrInvalidToken(err error) error {
-	return fmt.Errorf("failed to find token: %w", err)
+	return fmt.Errorf("invalid token: %w", err)
 }
 
 func ErrCheckToken(err error) error {

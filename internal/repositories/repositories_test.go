@@ -9,6 +9,7 @@ import (
 
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
 	"github.com/breakfront-planner/auth-service/internal/database"
@@ -16,17 +17,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// RepositoryTestSuite is a base test suite for all repository integration tests
 type RepositoryTestSuite struct {
 	suite.Suite
-	DB           *sql.DB
-	UserRepo     *UserRepository
-	TokenRepo    *TokenRepository
-	TestLogin    string
-	TestPassword string
+	DB               *sql.DB
+	UserRepo         *UserRepository
+	TokenRepo        *TokenRepository
+	TestLogin        string
+	TestPassword     string
+	RefreshDuration  time.Duration
+	TokenHashedValue string
 }
 
-// SetupSuite runs once before all tests - creates DB connection and runs migrations
 func (s *RepositoryTestSuite) SetupSuite() {
 
 	err := godotenv.Load("../../.env.test")
@@ -34,6 +35,12 @@ func (s *RepositoryTestSuite) SetupSuite() {
 
 	s.TestLogin = os.Getenv("TEST_LOGIN")
 	s.TestPassword = os.Getenv("TEST_PASS")
+
+	s.RefreshDuration, err = time.ParseDuration(os.Getenv("REFRESH_DURATION"))
+	if err != nil {
+		s.RefreshDuration = 15 * time.Minute
+	}
+	s.TokenHashedValue = os.Getenv("TOKEN_HASHED_VALUE")
 
 	// Connection string for test database
 	requiredEnvVars := []string{"TEST_DB_HOST", "TEST_DB_PORT", "TEST_DB_USER", "TEST_DB_PASSWORD", "TEST_DB_NAME", "TEST_DB_SSLMODE"}
@@ -88,7 +95,6 @@ func (s *RepositoryTestSuite) TearDownTest() {
 	require.NoError(s.T(), err, "Failed to cleanup users")
 }
 
-// TearDownSuite runs once after all tests - closes DB connection
 func (s *RepositoryTestSuite) TearDownSuite() {
 
 	if s.DB != nil {

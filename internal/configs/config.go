@@ -14,12 +14,12 @@ type Config struct {
 func Load() (*Config, error) {
 	accessDur, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_DURATION"))
 	if err != nil {
-		accessDur = 2 * time.Hour // дефолт
+		accessDur = 10 * time.Minute
 	}
 
 	refreshDur, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_DURATION"))
 	if err != nil {
-		refreshDur = 48 * time.Hour // дефолт
+		refreshDur = 48 * time.Hour
 	}
 
 	return &Config{

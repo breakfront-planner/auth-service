@@ -36,11 +36,16 @@ func (s *RepositoryTestSuite) SetupSuite() {
 	s.TestLogin = os.Getenv("TEST_LOGIN")
 	s.TestPassword = os.Getenv("TEST_PASS")
 
+	require.NotEmpty(s.T(), s.TestLogin, "TEST_LOGIN must be set in .env.test")
+	require.NotEmpty(s.T(), s.TestPassword, "TEST_PASS must be set in .env.test")
+
 	s.RefreshDuration, err = time.ParseDuration(os.Getenv("REFRESH_DURATION"))
 	if err != nil {
 		s.RefreshDuration = 15 * time.Minute
 	}
 	s.TokenHashedValue = os.Getenv("TOKEN_HASHED_VALUE")
+
+	require.NotEmpty(s.T(), s.TokenHashedValue, "TEST_HASH must be set in .env.test")
 
 	// Connection string for test database
 	requiredEnvVars := []string{"TEST_DB_HOST", "TEST_DB_PORT", "TEST_DB_USER", "TEST_DB_PASSWORD", "TEST_DB_NAME", "TEST_DB_SSLMODE"}

@@ -5,12 +5,15 @@ import (
 	"time"
 )
 
+// Config holds the application configuration settings.
 type Config struct {
 	JWTSecret       string
 	AccessDuration  time.Duration
 	RefreshDuration time.Duration
 }
 
+// Load reads configuration from environment variables.
+// It parses token durations and falls back to default values if parsing fails.
 func Load() (*Config, error) {
 	accessDur, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_DURATION"))
 	if err != nil {

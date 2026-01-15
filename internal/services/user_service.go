@@ -5,16 +5,19 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/models"
 )
 
+// IUserRepository defines the interface for user data persistence operations.
 type IUserRepository interface {
 	CreateUser(login string, passHash string) (*models.User, error)
 	FindUser(filter *models.UserFilter) (*models.User, error)
 }
 
+// UserService handles user management operations including creation and retrieval.
 type UserService struct {
 	userRepo    IUserRepository
 	hashService IHashService
 }
 
+// NewUserService creates a new user service instance.
 func NewUserService(userRepo IUserRepository, hashService IHashService) *UserService {
 	return &UserService{
 		userRepo:    userRepo,
@@ -22,6 +25,8 @@ func NewUserService(userRepo IUserRepository, hashService IHashService) *UserSer
 	}
 }
 
+// CreateUser creates a new user with the provided login and password.
+// Returns an error if the login is already taken or if password hashing fails.
 func (s *UserService) CreateUser(login string, password string) (*models.User, error) {
 	newUserFilter := models.UserFilter{
 		Login: &login,
@@ -50,6 +55,8 @@ func (s *UserService) CreateUser(login string, password string) (*models.User, e
 
 }
 
+// FindUser searches for a user matching the provided filter criteria.
+// Returns nil if no user is found.
 func (s *UserService) FindUser(filter *models.UserFilter) (*models.User, error) {
 
 	user, err := s.userRepo.FindUser(filter)
@@ -66,6 +73,7 @@ func (s *UserService) FindUser(filter *models.UserFilter) (*models.User, error) 
 
 }
 
+// CheckPassword verifies that the provided password matches the user's stored password hash.
 func (s *UserService) CheckPassword(login string, password string) error {
 
 	filter := models.UserFilter{

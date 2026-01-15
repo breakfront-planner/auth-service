@@ -13,6 +13,12 @@ JWT-based authentication service for Breakfront Planner with token rotation and 
 
 ## Architecture
 
+Layered Architecture + Repository Pattern
+├── API Layer
+├── Application/Service Layer
+├── Repository Layer
+└── Database Layer
+
 ### Tech Stack
 - **Language**: Go 1.24.5
 - **Database**: PostgreSQL 15
@@ -155,36 +161,6 @@ go generate ./internal/services/mocks/...
 ## Deployment
 
 The service includes a Docker Compose configuration for PostgreSQL.
-
-## Project Structure
-
-```
-auth-service/
-├── cmd/
-│   └── main.go                    # Application entry point
-├── internal/
-│   ├── autherrors/                # Custom error definitions
-│   ├── configs/                   # Configuration management
-│   ├── constants/                 # Constants and migration queries
-│   ├── database/                  # Database connection and migrations
-│   ├── jwt/                       # JWT token generation
-│   ├── models/                    # Domain models (User, Token)
-│   ├── repositories/              # Data access layer
-│   │   ├── user_repository.go
-│   │   ├── token_repository.go
-│   │   └── *_test.go             # Integration tests
-│   └── services/                  # Business logic layer
-│       ├── auth_service.go        # Main authentication service
-│       ├── user_service.go        # User management
-│       ├── token_service.go       # Token lifecycle
-│       ├── hash_service.go        # Hashing operations
-│       ├── mocks/                 # Generated mocks for testing
-│       └── *_test.go             # Unit tests
-├── .env                          # Environment configuration
-├── .env.test                     # Test environment configuration
-├── docker-compose.yml            # PostgreSQL for development
-└── docker-compose.test.yml       # PostgreSQL for testing
-```
 
 ## Roadmap
 

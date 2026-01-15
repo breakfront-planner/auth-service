@@ -7,6 +7,8 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/constants"
 )
 
+// RunMigrations applies database schema migrations in order.
+// It tracks applied migrations in the schema_migrations table to prevent duplicate application.
 func RunMigrations(db *sql.DB) error {
 	if _, err := db.Exec(constants.CreateMigrationsTable); err != nil {
 		return err

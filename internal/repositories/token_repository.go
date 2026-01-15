@@ -9,14 +9,17 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/models"
 )
 
+// TokenRepository handles refresh token data persistence operations.
 type TokenRepository struct {
 	db *sql.DB
 }
 
+// NewTokenRepository creates a new token repository instance.
 func NewTokenRepository(db *sql.DB) *TokenRepository {
 	return &TokenRepository{db: db}
 }
 
+// SaveToken persists a refresh token to the database.
 func (r *TokenRepository) SaveToken(token *models.Token) error {
 
 	_, err := r.db.Exec(`INSERT INTO refresh_tokens (token_hash, user_id, expires_at) VALUES ($1, $2, $3)`,
@@ -29,6 +32,7 @@ func (r *TokenRepository) SaveToken(token *models.Token) error {
 
 }
 
+// RevokeToken marks a refresh token as revoked by setting its revoked_at timestamp.
 func (r *TokenRepository) RevokeToken(token *models.Token) error {
 
 	_, err := r.db.Exec(`UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE token_hash = $1`, token.HashedValue)
@@ -40,6 +44,7 @@ func (r *TokenRepository) RevokeToken(token *models.Token) error {
 
 }
 
+// CheckToken validates a refresh token by verifying it exists, is not revoked, and has not expired.
 func (r *TokenRepository) CheckToken(token *models.Token) error {
 
 	var dbToken models.Token

@@ -7,25 +7,29 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/models"
 )
 
+// ITokenRepository defines the interface for token data persistence operations.
 type ITokenRepository interface {
 	SaveToken(token *models.Token) error
 	RevokeToken(token *models.Token) error
 	CheckToken(token *models.Token) error
 }
 
+// IHashService defines the interface for hashing operations.
 type IHashService interface {
 	HashToken(token string) string
 	HashPassword(password string) (string, error)
 	ComparePasswords(passHash, input string) error
 }
 
+// TokenService manages JWT token lifecycle including creation, validation, and revocation.
 type TokenService struct {
 	tokenRepo   ITokenRepository
 	hashService IHashService
-	jwtManager  *jwt.JWTManager
+	jwtManager  *jwt.Manager
 }
 
-func NewTokenService(tokenRepo ITokenRepository, hashService IHashService, jwtManager *jwt.JWTManager) *TokenService {
+// NewTokenService creates a new token service instance.
+func NewTokenService(tokenRepo ITokenRepository, hashService IHashService, jwtManager *jwt.Manager) *TokenService {
 	return &TokenService{
 		tokenRepo:   tokenRepo,
 		hashService: hashService,
@@ -33,6 +37,8 @@ func NewTokenService(tokenRepo ITokenRepository, hashService IHashService, jwtMa
 	}
 }
 
+// CreateNewTokenPair generates a new access and refresh token pair for the user.
+// The refresh token is hashed and persisted in the repository.
 func (s *TokenService) CreateNewTokenPair(user *models.User) (accessToken, refreshToken *models.Token, err error) {
 
 	accessToken, err = s.jwtManager.GenerateToken(user, constants.TokenTypeAccess)
@@ -56,6 +62,8 @@ func (s *TokenService) CreateNewTokenPair(user *models.User) (accessToken, refre
 
 }
 
+// Refresh validates the provided refresh token and generates a new token pair.
+// The old refresh token is revoked after successful validation.
 func (s *TokenService) Refresh(refreshToken *models.Token, user *models.User) (newAccessToken, newRefreshToken *models.Token, err error) {
 
 	refreshToken.HashedValue = s.hashService.HashToken(refreshToken.Value)
@@ -79,6 +87,7 @@ func (s *TokenService) Refresh(refreshToken *models.Token, user *models.User) (n
 
 }
 
+// RevokeToken invalidates the specified token by marking it as revoked in the repository.
 func (s *TokenService) RevokeToken(token *models.Token) error {
 
 	token.HashedValue = s.hashService.HashToken(token.Value)

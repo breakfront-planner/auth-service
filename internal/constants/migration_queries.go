@@ -10,6 +10,7 @@ const (
 		updated_at TIMESTAMPTZ DEFAULT now()
     );`
 
+	//nolint:gosec // G101: False positive - this is a SQL schema definition, not hardcoded credentials
 	CreateRefreshTokensTable = `
     CREATE TABLE refresh_tokens (
 		id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

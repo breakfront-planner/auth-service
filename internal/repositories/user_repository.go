@@ -8,14 +8,17 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/models"
 )
 
+// UserRepository handles user data persistence operations.
 type UserRepository struct {
 	db *sql.DB
 }
 
+// NewUserRepository creates a new user repository instance.
 func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
+// CreateUser inserts a new user record into the database and returns the created user.
 func (r *UserRepository) CreateUser(login string, passHash string) (*models.User, error) {
 	var user models.User
 	query := `
@@ -34,6 +37,8 @@ func (r *UserRepository) CreateUser(login string, passHash string) (*models.User
 	return &user, nil
 }
 
+// FindUser searches for a user in the database using the provided filter criteria.
+// Returns nil if no matching user is found.
 func (r *UserRepository) FindUser(filter *models.UserFilter) (*models.User, error) {
 	if filter.ID == nil && filter.Login == nil {
 		return nil, autherrors.ErrFailToFindUser(fmt.Errorf("filter cannot be empty: at least one field must be specified"))
@@ -52,7 +57,6 @@ func (r *UserRepository) FindUser(filter *models.UserFilter) (*models.User, erro
 	if filter.Login != nil {
 		query += fmt.Sprintf(" AND login = $%d", argIndex)
 		args = append(args, *filter.Login)
-		argIndex++
 	}
 
 	var user models.User

@@ -23,7 +23,7 @@ type TokenServiceTestSuite struct {
 	ctrl            *gomock.Controller
 	mockTokenRepo   *mocks.MockITokenRepository
 	mockHashService *mocks.MockIHashService
-	jwtManager      *jwt.JWTManager
+	jwtManager      *jwt.Manager
 	tokenService    *TokenService
 	testUser        *models.User
 	accessDuration  time.Duration
@@ -67,7 +67,7 @@ func (s *TokenServiceTestSuite) SetupSuite() {
 	s.testHashedValue = envVars["TOKEN_HASHED_VALUE"]
 	s.testTokenValue = envVars["TOKEN_TEST_VALUE"]
 
-	s.jwtManager = jwt.NewJWTManager(envVars["TEST_JWT_SECRET"], s.accessDuration, s.refreshDuration)
+	s.jwtManager = jwt.NewManager(envVars["TEST_JWT_SECRET"], s.accessDuration, s.refreshDuration)
 
 	s.testUser = &models.User{
 		ID:           uuid.New(),

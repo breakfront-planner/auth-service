@@ -10,21 +10,29 @@ import (
 	"github.com/google/uuid"
 )
 
-type JWTManager struct {
+// Manager manages JWT token generation and validation.
+// It handles both access and refresh tokens with configurable expiration durations.
+type Manager struct {
 	secret          string
 	accessDuration  time.Duration
 	refreshDuration time.Duration
 }
 
-func NewJWTManager(secret string, accessDuration, refreshDuration time.Duration) *JWTManager {
-	return &JWTManager{
+// NewManager creates a new JWT manager instance.
+// The secret is used for signing tokens, while accessDuration and refreshDuration
+// define the expiration time for access and refresh tokens respectively.
+func NewManager(secret string, accessDuration, refreshDuration time.Duration) *Manager {
+	return &Manager{
 		secret:          secret,
 		accessDuration:  accessDuration,
 		refreshDuration: refreshDuration,
 	}
 }
 
-func (m *JWTManager) GenerateToken(user *models.User, tokenType constants.TokenType) (*models.Token, error) {
+// GenerateToken creates a new JWT token for the specified user.
+// The tokenType parameter determines whether to generate an access or refresh token,
+// which affects the token's expiration duration and claims.
+func (m *Manager) GenerateToken(user *models.User, tokenType constants.TokenType) (*models.Token, error) {
 	var duration time.Duration
 
 	switch tokenType {

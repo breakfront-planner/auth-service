@@ -1,0 +1,33 @@
+# .golangci.yml
+
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - goconst
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - unused
+    - revive
+
+linters-settings:
+  errcheck:
+    check-blank: true
+
+  govet:
+    check-shadowing: true
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+
+run:
+  timeout: 5m
+  tests: true

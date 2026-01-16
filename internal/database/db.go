@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
-
-	_ "github.com/lib/pq"
 )
 
+// Connect establishes a connection to the PostgreSQL database using environment variables.
+// It validates required environment variables, configures connection pool settings,
+// and verifies the connection with a ping.
 func Connect() (*sql.DB, error) {
 
 	requiredEnvVars := []string{"DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_SSLMODE"}
@@ -44,6 +46,10 @@ func Connect() (*sql.DB, error) {
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
+
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
 	return db, nil
 }

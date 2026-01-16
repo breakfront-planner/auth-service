@@ -24,7 +24,9 @@ func TestParseFilter(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, fields, 1)
-		assert.Equal(t, testID, fields["id"])
+		assert.Equal(t, "ID", fields[0].FilterName)
+		assert.Equal(t, "id", fields[0].DBName)
+		assert.Equal(t, testID, fields[0].Value)
 	})
 
 	t.Run("valid filter with multiple fields", func(t *testing.T) {
@@ -38,8 +40,12 @@ func TestParseFilter(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, fields, 2)
-		assert.Equal(t, testID, fields["id"])
-		assert.Equal(t, testLogin, fields["login"])
+		assert.Equal(t, "ID", fields[0].FilterName)
+		assert.Equal(t, "id", fields[0].DBName)
+		assert.Equal(t, testID, fields[0].Value)
+		assert.Equal(t, "Login", fields[1].FilterName)
+		assert.Equal(t, "login", fields[1].DBName)
+		assert.Equal(t, testLogin, fields[1].Value)
 	})
 
 	t.Run("valid filter with partial fields", func(t *testing.T) {
@@ -53,9 +59,9 @@ func TestParseFilter(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, fields, 1)
-		assert.Equal(t, testID, fields["id"])
-		_, hasLogin := fields["login"]
-		assert.False(t, hasLogin, "nil fields should be excluded")
+		assert.Equal(t, "ID", fields[0].FilterName)
+		assert.Equal(t, "id", fields[0].DBName)
+		assert.Equal(t, testID, fields[0].Value)
 	})
 
 	t.Run("error on empty filter - all fields nil", func(t *testing.T) {
@@ -122,9 +128,9 @@ func TestParseFilter(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, fields, 1)
-		assert.Equal(t, testID, fields["id"])
-		_, hasIgnored := fields["IgnoredData"]
-		assert.False(t, hasIgnored, "fields without db tag should be ignored")
+		assert.Equal(t, "ID", fields[0].FilterName)
+		assert.Equal(t, "id", fields[0].DBName)
+		assert.Equal(t, testID, fields[0].Value)
 	})
 
 	t.Run("ignore fields with empty db tag", func(t *testing.T) {
@@ -139,9 +145,9 @@ func TestParseFilter(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, fields, 1)
-		assert.Equal(t, testID, fields["id"])
-		_, hasEmpty := fields[""]
-		assert.False(t, hasEmpty, "fields with empty db tag should be ignored")
+		assert.Equal(t, "ID", fields[0].FilterName)
+		assert.Equal(t, "id", fields[0].DBName)
+		assert.Equal(t, testID, fields[0].Value)
 	})
 
 	t.Run("works with pointer to struct", func(t *testing.T) {
@@ -154,15 +160,17 @@ func TestParseFilter(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, fields, 1)
-		assert.Equal(t, testID, fields["id"])
+		assert.Equal(t, "ID", fields[0].FilterName)
+		assert.Equal(t, "id", fields[0].DBName)
+		assert.Equal(t, testID, fields[0].Value)
 	})
 
 	t.Run("works with different data types", func(t *testing.T) {
 		type Filter struct {
-			IntField    *int    `db:"int_field"`
-			StringField *string `db:"string_field"`
+			IntField    *int       `db:"int_field"`
+			StringField *string    `db:"string_field"`
 			UUIDField   *uuid.UUID `db:"uuid_field"`
-			BoolField   *bool   `db:"bool_field"`
+			BoolField   *bool      `db:"bool_field"`
 		}
 
 		intVal := 42
@@ -180,9 +188,17 @@ func TestParseFilter(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, fields, 4)
-		assert.Equal(t, intVal, fields["int_field"])
-		assert.Equal(t, strVal, fields["string_field"])
-		assert.Equal(t, uuidVal, fields["uuid_field"])
-		assert.Equal(t, boolVal, fields["bool_field"])
+		assert.Equal(t, "IntField", fields[0].FilterName)
+		assert.Equal(t, "int_field", fields[0].DBName)
+		assert.Equal(t, intVal, fields[0].Value)
+		assert.Equal(t, "StringField", fields[1].FilterName)
+		assert.Equal(t, "string_field", fields[1].DBName)
+		assert.Equal(t, strVal, fields[1].Value)
+		assert.Equal(t, "UUIDField", fields[2].FilterName)
+		assert.Equal(t, "uuid_field", fields[2].DBName)
+		assert.Equal(t, uuidVal, fields[2].Value)
+		assert.Equal(t, "BoolField", fields[3].FilterName)
+		assert.Equal(t, "bool_field", fields[3].DBName)
+		assert.Equal(t, boolVal, fields[3].Value)
 	})
 }

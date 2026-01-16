@@ -155,7 +155,6 @@ docker-compose -f docker-compose.test.yml down
 
 #### Unit Tests (Service Layer)
 Tests use `gomock` for dependency injection:
-
 ```bash
 # Run all service unit tests
 go test -v ./internal/services

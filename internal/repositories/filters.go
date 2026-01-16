@@ -8,19 +8,20 @@ import (
 
 // FilterField is a struct with name and values of one filter field.
 type FilterField struct {
-	Column string
-	Value  any
+	FilterName string
+	DBName     string
+	Value      any
 }
 
 // ParseFilter get fields from filter and return db name and value.
-func ParseFilter(filter any) (map[string]interface{}, error) {
+func ParseFilter(filter any) ([]FilterField, error) {
 	v := reflect.ValueOf(filter)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
 	t := v.Type()
 
-	fields := make(map[string]interface{})
+	var fields []FilterField
 
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
@@ -35,7 +36,11 @@ func ParseFilter(filter any) (map[string]interface{}, error) {
 			continue
 		}
 
-		fields[columnName] = field.Elem().Interface()
+		fields = append(fields, FilterField{
+			FilterName: fieldType.Name,
+			DBName:     columnName,
+			Value:      field.Elem().Interface(),
+		})
 	}
 
 	if len(fields) == 0 {

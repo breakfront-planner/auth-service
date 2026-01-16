@@ -17,6 +17,6 @@ type User struct {
 
 // UserFilter provides criteria for searching users.
 type UserFilter struct {
-	ID    *uuid.UUID
-	Login *string
+	ID    *uuid.UUID `db:"id"`
+	Login *string    `db:"login"`
 }

@@ -1,7 +1,13 @@
 package autherrors
 
 import (
+	"errors"
 	"fmt"
+)
+
+var (
+	ErrNoPtrsFilterFields = errors.New("all filter fields must be pointers")
+	ErrEmptyFilter        = errors.New("filter cannot be empty")
 )
 
 func ErrMissingEnvVars(varNames []string) error {

@@ -40,8 +40,9 @@ Layered Architecture + Repository Pattern
 - **HashService**: Provides password and token hashing using bcrypt and SHA-256
 
 ### Repository Layer
-- **UserRepository**: Database operations for user management
+- **UserRepository**: Database operations for user management with flexible filtering
 - **TokenRepository**: Token persistence and validation
+- **Filter System**: Generic reflection-based filter parser for dynamic query building
 
 ### JWT Manager
 - Generates access and refresh tokens with configurable expiration
@@ -61,6 +62,23 @@ Layered Architecture + Repository Pattern
   - Stored hashed in the database (SHA-256)
   - Used to obtain new access & refresh tokens
   - Supports rotation for security
+
+## Filter System
+
+The repository layer uses a generic reflection-based filter parser for flexible query building:
+
+- **Type-safe filters**: Uses struct tags (`db:"column_name"`) to map fields to database columns
+- **Pointer-based fields**: Only non-nil pointer fields are included in queries
+- **Dynamic query generation**: Builds SQL WHERE clauses automatically from filter structs
+- **Validation**: Ensures all filter fields are pointers and at least one field is populated
+- **Example usage**:
+  ```go
+  filter := models.UserFilter{
+      Login: &userLogin,  // Only search by login
+      ID: nil,            // ID is ignored
+  }
+  user, err := userRepo.FindUser(&filter)
+  ```
 
 ## Security Features
 
@@ -153,9 +171,10 @@ go generate ./internal/services/mocks/...
 ```
 
 #### Test Coverage Summary
-- **71 total tests** across repository and service layers
-- **Integration tests (9)**: User and token repository operations
+- **82 total tests** across repository and service layers
+- **Integration tests (9)**: User and token repository operations with filter validation
 - **Unit tests (62)**: Authentication flows, token lifecycle, password hashing
+- **Filter unit tests (11)**: Reflection-based filter parsing, validation, and error handling
 - Test scenarios include: success paths, error handling, edge cases, and security validations
 
 ## Deployment
@@ -170,7 +189,8 @@ The service includes a Docker Compose configuration for PostgreSQL.
 - [x] JWT token generation and validation
 - [x] Token rotation and revocation
 - [x] Database repositories with PostgreSQL
-- [x] Comprehensive test suite (71 tests)
+- [x] Generic filter system with reflection-based parsing
+- [x] Comprehensive test suite (82 tests)
 - [x] Mock generation for unit testing
 
 ### In Progress

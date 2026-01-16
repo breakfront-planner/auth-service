@@ -3,6 +3,7 @@ package repositories
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
 	"github.com/breakfront-planner/auth-service/internal/models"
@@ -40,27 +41,24 @@ func (r *UserRepository) CreateUser(login string, passHash string) (*models.User
 // FindUser searches for a user in the database using the provided filter criteria.
 // Returns nil if no matching user is found.
 func (r *UserRepository) FindUser(filter *models.UserFilter) (*models.User, error) {
-	if filter.ID == nil && filter.Login == nil {
-		return nil, autherrors.ErrFailToFindUser(fmt.Errorf("filter cannot be empty: at least one field must be specified"))
+	fields, err := ParseFilter(filter)
+
+	if err != nil {
+		return nil, autherrors.ErrFailToFindUser(err)
 	}
 
-	query := `SELECT id, login, password_hash, created_at, updated_at FROM users WHERE 1=1`
-	args := []interface{}{}
-	argIndex := 1
-
-	if filter.ID != nil {
-		query += fmt.Sprintf(" AND id = $%d", argIndex)
-		args = append(args, *filter.ID)
-		argIndex++
+	var conditions []string
+	var args []interface{}
+	i := 1
+	for column, value := range fields {
+		conditions = append(conditions, fmt.Sprintf("%s = $%d", column, i))
+		args = append(args, value)
+		i++
 	}
-
-	if filter.Login != nil {
-		query += fmt.Sprintf(" AND login = $%d", argIndex)
-		args = append(args, *filter.Login)
-	}
+	query := `SELECT id, login, password_hash, created_at, updated_at FROM users WHERE ` + strings.Join(conditions, " AND ")
 
 	var user models.User
-	err := r.db.QueryRow(query, args...).Scan(
+	err = r.db.QueryRow(query, args...).Scan(
 		&user.ID, &user.Login, &user.PasswordHash, &user.CreatedAt, &user.UpdatedAt)
 
 	if err == sql.ErrNoRows {

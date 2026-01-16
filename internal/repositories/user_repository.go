@@ -49,11 +49,9 @@ func (r *UserRepository) FindUser(filter *models.UserFilter) (*models.User, erro
 
 	var conditions []string
 	var args []interface{}
-	i := 1
-	for column, value := range fields {
-		conditions = append(conditions, fmt.Sprintf("%s = $%d", column, i))
-		args = append(args, value)
-		i++
+	for i, value := range fields {
+		conditions = append(conditions, fmt.Sprintf("%s = $%d", value.DBName, i+1))
+		args = append(args, value.Value)
 	}
 	query := `SELECT id, login, password_hash, created_at, updated_at FROM users WHERE ` + strings.Join(conditions, " AND ")
 

@@ -11,7 +11,7 @@ import (
 type ITokenRepository interface {
 	SaveToken(token *models.Token) error
 	RevokeToken(token *models.Token) error
-	CheckToken(token *models.Token) error
+	FindToken(token *models.Token) error
 }
 
 // IHashService defines the interface for hashing operations.
@@ -68,7 +68,7 @@ func (s *TokenService) Refresh(refreshToken *models.Token, user *models.User) (n
 
 	refreshToken.HashedValue = s.hashService.HashToken(refreshToken.Value)
 
-	err = s.tokenRepo.CheckToken(refreshToken)
+	err = s.tokenRepo.FindToken(refreshToken)
 	if err != nil {
 		return nil, nil, autherrors.ErrRefreshToken(err)
 	}
@@ -91,9 +91,9 @@ func (s *TokenService) Refresh(refreshToken *models.Token, user *models.User) (n
 func (s *TokenService) RevokeToken(token *models.Token) error {
 
 	token.HashedValue = s.hashService.HashToken(token.Value)
-	err := s.tokenRepo.CheckToken(token)
+	err := s.tokenRepo.FindToken(token)
 	if err != nil {
-		return autherrors.ErrInvalidToken(err)
+		return err
 	}
 
 	err = s.tokenRepo.RevokeToken(token)

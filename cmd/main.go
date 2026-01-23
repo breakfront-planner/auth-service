@@ -44,16 +44,16 @@ func main() {
 
 	/*
 
-		userRepo := repositories.NewUserRepository(db)
-		tokenRepo := repositories.NewTokenRepository(db)
+				userRepo := repositories.NewUserRepository(db)
+				tokenRepo := repositories.NewTokenRepository(db)
 
-		cfg, _ := configs.Load()
-		jwtManager := jwt.NewManager(cfg.JWTSecret, cfg.AccessDuration, cfg.RefreshDuration)
-
+				cfg, _ := configs.Load()
+				jwtManager := jwt.NewManager(cfg.JWTSecret, cfg.AccessDuration, cfg.RefreshDuration)
 		hashService := services.NewHashService()
-		userService := services.NewUserService(userRepo, hashService)
-		tokenService := services.NewTokenService(tokenRepo, hashService, jwtManager)
-		authService := services.NewAuthService(tokenService, userService)
+				userService := services.NewUserService(userRepo, hashService)
+				tokenService := services.NewTokenService(tokenRepo, hashService, jwtManager)
+				validator := validators.NewTokenValidator(jwtManager, userService)
+				authService := services.NewAuthService(tokenService, userService, validator)
 
 	*/
 

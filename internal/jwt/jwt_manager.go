@@ -64,3 +64,50 @@ func (m *Manager) GenerateToken(user *models.User, tokenType constants.TokenType
 	}
 	return &token, nil
 }
+
+// ParseToken extract user info from token
+func (m *Manager) ParseToken(tokenString string) (parsedToken *models.ParsedToken, err error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, autherrors.ErrTokenSignMethod
+		}
+		return []byte(m.secret), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, autherrors.ErrInvalidJWT
+	}
+
+	userIDStr, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, autherrors.ErrNoClaimInToken("user_id")
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return nil, autherrors.ErrInvalidUserID
+	}
+	tokenType, ok := claims["type"].(string)
+	if !ok {
+		return nil, autherrors.ErrNoClaimInToken("type")
+	}
+
+	expFloat, ok := claims["exp"].(float64)
+	if !ok {
+		return nil, autherrors.ErrNoClaimInToken("exp")
+	}
+	exp := time.Unix(int64(expFloat), 0)
+
+	parsedToken = &models.ParsedToken{
+		UserID:    userID,
+		Type:      tokenType,
+		ExpiresAt: exp,
+	}
+
+	return parsedToken, nil
+}

@@ -140,7 +140,7 @@ func (s *TokenServiceTestSuite) TestRefreshSuccess() {
 		Times(1)
 
 	s.mockTokenRepo.EXPECT().
-		CheckToken(gomock.Any()).
+		FindToken(gomock.Any()).
 		DoAndReturn(func(token *models.Token) error {
 			assert.Equal(s.T(), s.testHashedValue, token.HashedValue)
 			return nil
@@ -186,7 +186,7 @@ func (s *TokenServiceTestSuite) TestRefreshInvalidToken() {
 		Return(s.testHashedValue)
 
 	s.mockTokenRepo.EXPECT().
-		CheckToken(gomock.Any()).
+		FindToken(gomock.Any()).
 		Return(checkError)
 
 	newAccessToken, newRefreshToken, err := s.tokenService.Refresh(oldRefreshToken, s.testUser)
@@ -212,7 +212,7 @@ func (s *TokenServiceTestSuite) TestRefreshRevokeError() {
 		Times(1)
 
 	s.mockTokenRepo.EXPECT().
-		CheckToken(gomock.Any()).
+		FindToken(gomock.Any()).
 		Return(nil)
 
 	s.mockHashService.EXPECT().
@@ -251,7 +251,7 @@ func (s *TokenServiceTestSuite) TestRefreshCreateTokenPairError() {
 		Times(1)
 
 	s.mockTokenRepo.EXPECT().
-		CheckToken(gomock.Any()).
+		FindToken(gomock.Any()).
 		Return(nil)
 
 	s.mockHashService.EXPECT().
@@ -283,7 +283,7 @@ func (s *TokenServiceTestSuite) TestRevokeTokenSuccess() {
 		Return(s.testHashedValue)
 
 	s.mockTokenRepo.EXPECT().
-		CheckToken(gomock.Any()).
+		FindToken(gomock.Any()).
 		DoAndReturn(func(token *models.Token) error {
 			assert.Equal(s.T(), s.testHashedValue, token.HashedValue)
 			return nil
@@ -315,13 +315,13 @@ func (s *TokenServiceTestSuite) TestRevokeTokenCheckError() {
 		Return(s.testHashedValue)
 
 	s.mockTokenRepo.EXPECT().
-		CheckToken(gomock.Any()).
+		FindToken(gomock.Any()).
 		Return(checkError)
 
 	err := s.tokenService.RevokeToken(token)
 
 	assert.Error(s.T(), err)
-	assert.ErrorContains(s.T(), err, "invalid token")
+	assert.ErrorContains(s.T(), err, "token not found")
 }
 
 func (s *TokenServiceTestSuite) TestRevokeTokenRevokeError() {
@@ -338,7 +338,7 @@ func (s *TokenServiceTestSuite) TestRevokeTokenRevokeError() {
 		Return(s.testHashedValue)
 
 	s.mockTokenRepo.EXPECT().
-		CheckToken(gomock.Any()).
+		FindToken(gomock.Any()).
 		Return(nil)
 
 	s.mockTokenRepo.EXPECT().

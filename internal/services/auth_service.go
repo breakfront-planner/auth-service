@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/breakfront-planner/auth-service/internal/models"
+	"github.com/breakfront-planner/auth-service/internal/validators"
 )
 
 // IUserService defines the interface for user-related operations.
@@ -18,18 +19,27 @@ type ITokenService interface {
 	RevokeToken(token *models.Token) error
 }
 
+// ITokenValidator defines the interface for token validation.
+type ITokenValidator interface {
+	ValidateRefreshToken(tokenValue string) (*models.ParsedToken, error)
+	ValidateAccessToken(tokenValue string) (*models.ParsedToken, error)
+	Validate(tokenValue string, opts ...validators.ValidationOption) (*models.ParsedToken, error)
+}
+
 // AuthService provides authentication and authorization functionality.
-// It coordinates between user and token services to handle registration, login, and logout flows.
+// It coordinates between user, token, and validation services to handle registration, login, and logout flows.
 type AuthService struct {
-	tokenService ITokenService
-	userService  IUserService
+	tokenService   ITokenService
+	userService    IUserService
+	tokenValidator ITokenValidator
 }
 
 // NewAuthService creates a new authentication service instance.
-func NewAuthService(tokenService ITokenService, userService IUserService) *AuthService {
+func NewAuthService(tokenService ITokenService, userService IUserService, tokenValidator ITokenValidator) *AuthService {
 	return &AuthService{
-		tokenService: tokenService,
-		userService:  userService,
+		tokenService:   tokenService,
+		userService:    userService,
+		tokenValidator: tokenValidator,
 	}
 }
 
@@ -70,49 +80,37 @@ func (s *AuthService) Login(login string, password string) (accessToken, refresh
 
 // Refresh generates a new token pair using a valid refresh token.
 // The old refresh token is revoked after successful generation of new tokens.
-func (s *AuthService) Refresh(oldRefreshTokenValue string, login string) (newAccessToken, newRefreshToken *models.Token, err error) {
-
-	newUserFilter := models.UserFilter{
-		Login: &login,
-	}
-
-	user, err := s.userService.FindUser(&newUserFilter)
-
+func (s *AuthService) Refresh(oldRefreshTokenValue string) (newAccessToken, newRefreshToken *models.Token, err error) {
+	// Validate refresh token using the validator
+	parsedToken, err := s.tokenValidator.ValidateRefreshToken(oldRefreshTokenValue)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	oldRefreshToken := models.Token{
-		UserID: user.ID,
+		UserID: parsedToken.UserID,
 		Value:  oldRefreshTokenValue,
 	}
 
-	return s.tokenService.Refresh(&oldRefreshToken, user)
+	user := models.User{
+		ID: parsedToken.UserID,
+	}
 
+	return s.tokenService.Refresh(&oldRefreshToken, &user)
 }
 
 // Logout invalidates the user's refresh token, effectively ending their session.
-func (s *AuthService) Logout(refreshToken string, login string) error {
-
-	newUserFilter := models.UserFilter{
-		Login: &login,
-	}
-
-	user, err := s.userService.FindUser(&newUserFilter)
-
+func (s *AuthService) Logout(refreshTokenValue string) error {
+	// Validate refresh token using the validator
+	parsedToken, err := s.tokenValidator.ValidateRefreshToken(refreshTokenValue)
 	if err != nil {
 		return err
 	}
 
 	tokenToRevoke := models.Token{
-		UserID: user.ID,
-		Value:  refreshToken,
+		UserID: parsedToken.UserID,
+		Value:  refreshTokenValue,
 	}
 
-	err = s.tokenService.RevokeToken(&tokenToRevoke)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s.tokenService.RevokeToken(&tokenToRevoke)
 }

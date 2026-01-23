@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ErrLoginTaken     = errors.New("login already taken")
-	ErrWrongTokenType = errors.New("wrong tokenType, should be 'access' or 'refresh'")
+	ErrLoginTaken   = errors.New("login already taken")
+	ErrTokenType    = errors.New("wrong token type")
+	ErrTokenExpired = errors.New("token expired")
 )
 
 func ErrPassHash(err error) error {
@@ -46,4 +47,8 @@ func ErrRefreshToken(err error) error {
 
 func ErrRevokeToken(err error) error {
 	return fmt.Errorf("failed to revoke token: %w", err)
+}
+
+func ErrParseToken(err error) error {
+	return fmt.Errorf("failed to parse token: %w", err)
 }

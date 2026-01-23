@@ -36,7 +36,7 @@ func (s *TokenRepositoryTestSuite) TestSaveAndCheckSuccess() {
 	err := s.TokenRepo.SaveToken(&token)
 	require.NoError(s.T(), err)
 
-	err = s.TokenRepo.CheckToken(&token)
+	err = s.TokenRepo.FindToken(&token)
 	require.NoError(s.T(), err)
 }
 
@@ -120,7 +120,7 @@ func (s *TokenRepositoryTestSuite) TestCheckTokenErrors() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			err := s.TokenRepo.CheckToken(&tc.token)
+			err := s.TokenRepo.FindToken(&tc.token)
 
 			require.Error(s.T(), err)
 			assert.ErrorContains(s.T(), err, tc.errorContains)
@@ -142,7 +142,7 @@ func (s *TokenRepositoryTestSuite) TestRevokeTokenSuccess() {
 	err = s.TokenRepo.RevokeToken(&token)
 	require.NoError(s.T(), err)
 
-	err = s.TokenRepo.CheckToken(&token)
+	err = s.TokenRepo.FindToken(&token)
 	require.Error(s.T(), err)
 	assert.ErrorContains(s.T(), err, "invalid token")
 }

@@ -40,18 +40,18 @@ func (m *MockITokenRepository) EXPECT() *MockITokenRepositoryMockRecorder {
 	return m.recorder
 }
 
-// CheckToken mocks base method.
-func (m *MockITokenRepository) CheckToken(token *models.Token) error {
+// FindToken mocks base method.
+func (m *MockITokenRepository) FindToken(token *models.Token) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckToken", token)
+	ret := m.ctrl.Call(m, "FindToken", token)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CheckToken indicates an expected call of CheckToken.
-func (mr *MockITokenRepositoryMockRecorder) CheckToken(token any) *gomock.Call {
+// FindToken indicates an expected call of FindToken.
+func (mr *MockITokenRepositoryMockRecorder) FindToken(token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckToken", reflect.TypeOf((*MockITokenRepository)(nil).CheckToken), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindToken", reflect.TypeOf((*MockITokenRepository)(nil).FindToken), token)
 }
 
 // RevokeToken mocks base method.

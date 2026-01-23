@@ -3,7 +3,6 @@ package repositories
 import (
 	"database/sql"
 	"log"
-	"time"
 
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
 	"github.com/breakfront-planner/auth-service/internal/models"
@@ -45,7 +44,7 @@ func (r *TokenRepository) RevokeToken(token *models.Token) error {
 }
 
 // CheckToken validates a refresh token by verifying it exists, is not revoked, and has not expired.
-func (r *TokenRepository) CheckToken(token *models.Token) error {
+func (r *TokenRepository) FindToken(token *models.Token) error {
 
 	var dbToken models.Token
 
@@ -63,12 +62,6 @@ func (r *TokenRepository) CheckToken(token *models.Token) error {
 
 	if err != nil {
 		return autherrors.ErrCheckToken(err)
-	}
-
-	if dbToken.ExpiresAt.Before(time.Now().UTC()) {
-
-		return autherrors.ErrExpiredToken(err)
-
 	}
 
 	return nil

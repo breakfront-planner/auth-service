@@ -124,6 +124,21 @@ func (mr *MockITokenServiceMockRecorder) CreateNewTokenPair(user any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewTokenPair", reflect.TypeOf((*MockITokenService)(nil).CreateNewTokenPair), user)
 }
 
+// ParseToken mocks base method.
+func (m *MockITokenService) ParseToken(tokenValue string) (*models.ParsedToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseToken", tokenValue)
+	ret0, _ := ret[0].(*models.ParsedToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseToken indicates an expected call of ParseToken.
+func (mr *MockITokenServiceMockRecorder) ParseToken(tokenValue any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseToken", reflect.TypeOf((*MockITokenService)(nil).ParseToken), tokenValue)
+}
+
 // Refresh mocks base method.
 func (m *MockITokenService) Refresh(refreshToken *models.Token, user *models.User) (*models.Token, *models.Token, error) {
 	m.ctrl.T.Helper()

@@ -14,3 +14,10 @@ type Token struct {
 	ExpiresAt   time.Time
 	RevokedAt   *time.Time
 }
+
+// Token represents parsed JWT token claims.
+type ParsedToken struct {
+	UserID    uuid.UUID
+	Type      string
+	ExpiresAt time.Time
+}

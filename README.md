@@ -39,6 +39,22 @@ Layered Architecture + Repository Pattern
 - **TokenService**: Handles token lifecycle (creation, validation, rotation, revocation)
 - **HashService**: Provides password and token hashing using bcrypt and SHA-256
 
+### Validators
+- **TokenValidator**: Flexible token validation with Functional Options pattern
+  - Always validates signature and expiration (security requirement)
+  - Optional validations: token type (access/refresh), user existence
+  - Enables reusable validation logic across services and future middleware
+  - Example:
+    ```go
+    // Validate with all checks
+    parsed, err := validator.ValidateRefreshToken(token)
+
+    // Validate with custom options
+    parsed, err := validator.Validate(token,
+        WithTokenType(constants.TokenTypeAccess),
+        WithUserExistenceCheck())
+    ```
+
 ### Repository Layer
 - **UserRepository**: Database operations for user management with flexible filtering
 - **TokenRepository**: Token persistence and validation
@@ -153,26 +169,33 @@ go test -v ./internal/repositories -run TestTokenRepositoryTestSuite
 docker-compose -f docker-compose.test.yml down
 ```
 
-#### Unit Tests (Service Layer)
+#### Unit Tests (Service & Validator Layers)
 Tests use `gomock` for dependency injection:
 ```bash
 # Run all service unit tests
 go test -v ./internal/services
+
+# Run validator unit tests
+go test -v ./internal/validators
 
 # Run specific test suites
 go test -v ./internal/services -run TestAuthServiceTestSuite
 go test -v ./internal/services -run TestUserServiceTestSuite
 go test -v ./internal/services -run TestTokenServiceTestSuite
 go test -v ./internal/services -run TestHashServiceTestSuite
+go test -v ./internal/validators -run TestTokenValidatorTestSuite
 
 # Generate mocks (when interfaces change)
 go generate ./internal/services/mocks/...
+go generate ./internal/validators/mocks/...
 ```
 
 #### Test Coverage Summary
-- **82 total tests** across repository and service layers
+- **92 total tests** across repository, service, and validator layers
 - **Integration tests (9)**: User and token repository operations with filter validation
-- **Unit tests (62)**: Authentication flows, token lifecycle, password hashing
+- **Unit tests (72)**: Authentication flows, token lifecycle, password hashing, token validation
+  - Service layer (62 tests): AuthService, UserService, TokenService, HashService
+  - Validator layer (10 tests): TokenValidator with various validation options
 - **Filter unit tests (11)**: Reflection-based filter parsing, validation, and error handling
 - Test scenarios include: success paths, error handling, edge cases, and security validations
 
@@ -187,9 +210,10 @@ The service includes a Docker Compose configuration for PostgreSQL.
 - [x] Password hashing with bcrypt
 - [x] JWT token generation and validation
 - [x] Token rotation and revocation
+- [x] Flexible token validator with Functional Options pattern
 - [x] Database repositories with PostgreSQL
 - [x] Generic filter system with reflection-based parsing
-- [x] Comprehensive test suite (82 tests)
+- [x] Comprehensive test suite (92 tests)
 - [x] Mock generation for unit testing
 
 ### In Progress

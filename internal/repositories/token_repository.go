@@ -43,7 +43,7 @@ func (r *TokenRepository) RevokeToken(token *models.Token) error {
 
 }
 
-// CheckToken validates a refresh token by verifying it exists, is not revoked, and has not expired.
+// FindToken validates a refresh token by verifying it exists, is not revoked, and has not expired.
 func (r *TokenRepository) FindToken(token *models.Token) error {
 
 	var dbToken models.Token

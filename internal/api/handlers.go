@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
+	"github.com/breakfront-planner/auth-service/internal/configs"
 	"github.com/breakfront-planner/auth-service/internal/models"
 )
 
@@ -18,11 +19,12 @@ type IAuthService interface {
 }
 
 type AuthHandler struct {
-	authService IAuthService
+	authService    IAuthService
+	credentialsCfg *configs.CredentialsConfig
 }
 
-func NewAuthHandler(authService IAuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
+func NewAuthHandler(authService IAuthService, credentialsCfg *configs.CredentialsConfig) *AuthHandler {
+	return &AuthHandler{authService: authService, credentialsCfg: credentialsCfg}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -43,6 +45,35 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		status, msg := mapError(err)
 		if status == http.StatusInternalServerError {
 			slog.Error("login failed", "error", err)
+		}
+		writeError(w, status, msg)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, TokenPairResponse{
+		AccessToken:  accessToken.Value,
+		RefreshToken: refreshToken.Value,
+	})
+}
+
+func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+
+	var req CredentialsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := validateCredentials(req, h.credentialsCfg); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	accessToken, refreshToken, err := h.authService.Register(req.Login, req.Password)
+	if err != nil {
+		status, msg := mapError(err)
+		if status == http.StatusInternalServerError {
+			slog.Error("registration failed", "error", err)
 		}
 		writeError(w, status, msg)
 		return

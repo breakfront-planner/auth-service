@@ -41,7 +41,3 @@ func ErrInvalidToken(err error) error {
 func ErrCheckToken(err error) error {
 	return fmt.Errorf("failed to check token: %w", err)
 }
-
-func ErrExpiredToken(err error) error {
-	return fmt.Errorf("token expired: %w", err)
-}

@@ -3,7 +3,7 @@
 JWT-based authentication service for Breakfront Planner with token rotation and secure credential management.
 
 ## Status
-**In Development** - Core authentication and service layers complete with comprehensive test coverage. HTTP handlers and API layer in progress.
+**In Development** - Core authentication, service layers, and HTTP API handlers complete with comprehensive test coverage.
 
 ## Documentation
 
@@ -31,7 +31,46 @@ Layered Architecture + Repository Pattern
   - `testify/suite` - Test framework with setup/teardown support
   - `gomock` - Mock generation for unit testing
 
+## API Endpoints
+
+| Method | Path        | Description                        | Request Body                     | Success Code |
+|--------|-------------|------------------------------------|----------------------------------|--------------|
+| POST   | `/login`    | Authenticate user                  | `{"login", "password"}`          | 200          |
+| POST   | `/register` | Register new user                  | `{"login", "password"}`          | 200          |
+| POST   | `/refresh`  | Refresh token pair                 | `{"refresh_token"}`              | 200          |
+| POST   | `/logout`   | Revoke refresh token               | `{"refresh_token"}`              | 204          |
+
+### Response Formats
+
+**Token pair** (login, register, refresh):
+```json
+{"access_token": "...", "refresh_token": "..."}
+```
+
+**Error**:
+```json
+{"error": "error message"}
+```
+
+### Error Handling
+- Client errors (400, 401, 409) return descriptive messages
+- Internal errors (500) return a generic `"internal server error"` — details are logged server-side via `slog`
+- Token-related errors (expired, invalid, wrong type) return `"unauthorized"` without leaking specifics
+- Logout always returns 204, regardless of token validity
+
+### Input Validation
+Registration credentials are validated against configurable limits from `validation_config.json`:
+- Login length: 3–50 characters
+- Password length: 8–72 characters
+
+Login endpoint only checks that fields are non-empty (business validation happens in the service layer).
+
 ## Core Components
+
+### API Layer
+- **AuthHandler**: HTTP handlers for all authentication endpoints
+- **DTOs**: Request/response types (`CredentialsRequest`, `TokenRequest`, `TokenPairResponse`, `ErrorResponse`)
+- **Validation**: Credential format validation with configurable limits from JSON config
 
 ### Service Layer
 - **AuthService**: Coordinates user authentication operations (register, login, refresh, logout)
@@ -169,7 +208,7 @@ go test -v ./internal/repositories -run TestTokenRepositoryTestSuite
 docker-compose -f docker-compose.test.yml down
 ```
 
-#### Unit Tests (Service & Validator Layers)
+#### Unit Tests (Service, Validator & API Layers)
 Tests use `gomock` for dependency injection:
 ```bash
 # Run all service unit tests
@@ -178,24 +217,30 @@ go test -v ./internal/services
 # Run validator unit tests
 go test -v ./internal/validators
 
+# Run handler unit tests
+go test -v ./internal/api
+
 # Run specific test suites
 go test -v ./internal/services -run TestAuthServiceTestSuite
 go test -v ./internal/services -run TestUserServiceTestSuite
 go test -v ./internal/services -run TestTokenServiceTestSuite
 go test -v ./internal/services -run TestHashServiceTestSuite
 go test -v ./internal/validators -run TestTokenValidatorTestSuite
+go test -v ./internal/api -run TestHandlersTestSuite
 
 # Generate mocks (when interfaces change)
 go generate ./internal/services/mocks/...
 go generate ./internal/validators/mocks/...
+go generate ./internal/api/mocks/...
 ```
 
 #### Test Coverage Summary
-- **92 total tests** across repository, service, and validator layers
+- **109 total tests** across repository, service, validator, and API layers
 - **Integration tests (9)**: User and token repository operations with filter validation
-- **Unit tests (72)**: Authentication flows, token lifecycle, password hashing, token validation
+- **Unit tests (89)**: Authentication flows, token lifecycle, password hashing, token validation, HTTP handlers
   - Service layer (62 tests): AuthService, UserService, TokenService, HashService
   - Validator layer (10 tests): TokenValidator with various validation options
+  - API layer (17 tests): Login, Register, Refresh, Logout handlers (success, validation, errors)
 - **Filter unit tests (11)**: Reflection-based filter parsing, validation, and error handling
 - Test scenarios include: success paths, error handling, edge cases, and security validations
 
@@ -213,12 +258,13 @@ The service includes a Docker Compose configuration for PostgreSQL.
 - [x] Flexible token validator with Functional Options pattern
 - [x] Database repositories with PostgreSQL
 - [x] Generic filter system with reflection-based parsing
-- [x] Comprehensive test suite (92 tests)
+- [x] HTTP handlers and REST API endpoints
+- [x] Input validation with configurable limits (JSON config)
+- [x] Error handling: generic client responses, structured server-side logging
+- [x] Comprehensive test suite (109 tests)
 - [x] Mock generation for unit testing
 
 ### In Progress
-- [ ] HTTP handlers and REST API endpoints
-- [ ] Input validation middleware
 - [ ] API documentation (OpenAPI/Swagger)
 
 ### Planned

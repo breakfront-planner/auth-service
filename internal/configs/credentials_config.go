@@ -1,9 +1,12 @@
 package configs
 
 import (
+	_ "embed"
 	"encoding/json"
-	"os"
 )
+
+//go:embed creds_config.json
+var credentialsConfigData []byte
 
 type CredentialsConfig struct {
 	LoginMinLen    int `json:"login_min_len"`
@@ -12,14 +15,9 @@ type CredentialsConfig struct {
 	PasswordMaxLen int `json:"password_max_len"`
 }
 
-func LoadCredentialsConfig(path string) (*CredentialsConfig, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
+func LoadCredentialsConfig() (*CredentialsConfig, error) {
 	var cfg CredentialsConfig
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	if err := json.Unmarshal(credentialsConfigData, &cfg); err != nil {
 		return nil, err
 	}
 

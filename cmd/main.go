@@ -2,19 +2,21 @@ package main
 
 import (
 	"log"
+	"net/http"
 
+	"github.com/breakfront-planner/auth-service/internal/api"
 	"github.com/breakfront-planner/auth-service/internal/database"
 
 	// Register database drivers
 	_ "github.com/lib/pq"
 
-	/*"github.com/breakfront-planner/auth-service/internal/jwt"
+	"github.com/breakfront-planner/auth-service/internal/configs"
+	"github.com/breakfront-planner/auth-service/internal/jwt"
 	"github.com/breakfront-planner/auth-service/internal/repositories"
 	"github.com/breakfront-planner/auth-service/internal/services"
-	"github.com/breakfront-planner/auth-service/internal/configs"
+	"github.com/breakfront-planner/auth-service/internal/validators"
 
 	"os"
-	*/
 
 	"github.com/joho/godotenv"
 )
@@ -42,19 +44,30 @@ func main() {
 	}
 	log.Println("Migrations ok")
 
-	/*
+	userRepo := repositories.NewUserRepository(db)
+	tokenRepo := repositories.NewTokenRepository(db)
 
-				userRepo := repositories.NewUserRepository(db)
-				tokenRepo := repositories.NewTokenRepository(db)
+	tokenCfg, _ := configs.LoadTokenConfig()
+	jwtManager := jwt.NewManager(tokenCfg.JWTSecret, tokenCfg.AccessDuration, tokenCfg.RefreshDuration)
 
-				cfg, _ := configs.Load()
-				jwtManager := jwt.NewManager(cfg.JWTSecret, cfg.AccessDuration, cfg.RefreshDuration)
-		hashService := services.NewHashService()
-				userService := services.NewUserService(userRepo, hashService)
-				tokenService := services.NewTokenService(tokenRepo, hashService, jwtManager)
-				validator := validators.NewTokenValidator(jwtManager, userService)
-				authService := services.NewAuthService(tokenService, userService, validator)
+	hashService := services.NewHashService()
+	userService := services.NewUserService(userRepo, hashService)
+	tokenService := services.NewTokenService(tokenRepo, hashService, jwtManager)
+	validator := validators.NewTokenValidator(jwtManager, userService)
+	authService := services.NewAuthService(tokenService, userService, validator)
 
-	*/
+	credentialsCfg, _ := configs.LoadCredentialsConfig()
+	authHandler := api.NewAuthHandler(authService, credentialsCfg)
+
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	router := api.NewRouter(authHandler)
+	server := &http.Server{Addr: ":" + port, Handler: router}
+
+	log.Printf("Server starting on :%s", port)
+	log.Fatal(server.ListenAndServe())
 
 }

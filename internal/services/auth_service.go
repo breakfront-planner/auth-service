@@ -26,7 +26,7 @@ type ITokenValidator interface {
 	Validate(tokenValue string, opts ...validators.ValidationOption) (*models.ParsedToken, error)
 }
 
-// AuthService provides authentication and authorization functionality.
+// AuthService provides authorization functionality.
 // It coordinates between user, token, and validation services to handle registration, login, and logout flows.
 type AuthService struct {
 	tokenService   ITokenService
@@ -44,7 +44,6 @@ func NewAuthService(tokenService ITokenService, userService IUserService, tokenV
 }
 
 // Register creates a new user account and returns access and refresh tokens.
-// Returns an error if the user already exists or if token generation fails.
 func (s *AuthService) Register(login string, password string) (accessToken, refreshToken *models.Token, err error) {
 
 	user, err := s.userService.CreateUser(login, password)
@@ -58,7 +57,6 @@ func (s *AuthService) Register(login string, password string) (accessToken, refr
 }
 
 // Login authenticates a user with their credentials and returns access and refresh tokens.
-// Returns an error if credentials are invalid or token generation fails.
 func (s *AuthService) Login(login string, password string) (accessToken, refreshToken *models.Token, err error) {
 
 	err = s.userService.CheckPassword(login, password)
@@ -79,9 +77,7 @@ func (s *AuthService) Login(login string, password string) (accessToken, refresh
 }
 
 // Refresh generates a new token pair using a valid refresh token.
-// The old refresh token is revoked after successful generation of new tokens.
 func (s *AuthService) Refresh(oldRefreshTokenValue string) (newAccessToken, newRefreshToken *models.Token, err error) {
-	// Validate refresh token using the validator
 	parsedToken, err := s.tokenValidator.ValidateRefreshToken(oldRefreshTokenValue)
 	if err != nil {
 		return nil, nil, err
@@ -101,7 +97,6 @@ func (s *AuthService) Refresh(oldRefreshTokenValue string) (newAccessToken, newR
 
 // Logout invalidates the user's refresh token, effectively ending their session.
 func (s *AuthService) Logout(refreshTokenValue string) error {
-	// Validate refresh token using the validator
 	parsedToken, err := s.tokenValidator.ValidateRefreshToken(refreshTokenValue)
 	if err != nil {
 		return err

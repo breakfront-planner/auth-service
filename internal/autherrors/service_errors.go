@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	ErrLoginTaken   = errors.New("login already taken")
-	ErrTokenType    = errors.New("wrong token type")
-	ErrTokenExpired = errors.New("token expired")
+	ErrLoginTaken         = errors.New("login already taken")
+	ErrTokenType          = errors.New("wrong token type")
+	ErrTokenExpired       = errors.New("token expired")
+	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
 func ErrPassHash(err error) error {
@@ -34,11 +35,11 @@ func ErrCreateToken(err error) error {
 }
 
 func ErrWrongLogin(err error) error {
-	return fmt.Errorf("failed to find user: %w", err)
+	return fmt.Errorf("failed to find user: %w: %w", ErrInvalidCredentials, err)
 }
 
 func ErrWrongPassword(err error) error {
-	return fmt.Errorf("wrong password: %w", err)
+	return fmt.Errorf("wrong password: %w: %w", ErrInvalidCredentials, err)
 }
 
 func ErrRefreshToken(err error) error {

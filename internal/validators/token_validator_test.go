@@ -2,10 +2,10 @@ package validators
 
 import (
 	"errors"
-	"os"
 	"testing"
 	"time"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
 
+	"github.com/breakfront-planner/auth-service/internal/configs"
 	"github.com/breakfront-planner/auth-service/internal/constants"
 	"github.com/breakfront-planner/auth-service/internal/jwt"
 	"github.com/breakfront-planner/auth-service/internal/models"
@@ -23,6 +24,7 @@ type TokenValidatorTestSuite struct {
 	suite.Suite
 	ctrl            *gomock.Controller
 	mockUserService *mocks.MockIUserService
+	jwtSecret       string
 	jwtManager      *jwt.Manager
 	validator       *TokenValidator
 	testUser        *models.User
@@ -36,16 +38,13 @@ func (s *TokenValidatorTestSuite) SetupSuite() {
 	err := godotenv.Load("../../.env.test")
 	require.NoError(s.T(), err, "Failed to load .env.test")
 
-	jwtSecret := os.Getenv("TEST_JWT_SECRET")
-	require.NotEmpty(s.T(), jwtSecret, "TEST_JWT_SECRET must be set")
+	tokenCfg := &configs.TokenConfig{}
+	require.NoError(s.T(), env.ParseWithOptions(tokenCfg, env.Options{Prefix: "TEST_"}), "Failed to parse test token configuration")
 
-	s.accessDuration, err = time.ParseDuration(os.Getenv("ACCESS_TOKEN_DURATION"))
-	require.NoError(s.T(), err)
-
-	s.refreshDuration, err = time.ParseDuration(os.Getenv("REFRESH_TOKEN_DURATION"))
-	require.NoError(s.T(), err)
-
-	s.jwtManager = jwt.NewManager(jwtSecret, s.accessDuration, s.refreshDuration)
+	s.jwtSecret = tokenCfg.JWTSecret
+	s.accessDuration = tokenCfg.AccessDuration
+	s.refreshDuration = tokenCfg.RefreshDuration
+	s.jwtManager = jwt.NewManager(s.jwtSecret, s.accessDuration, s.refreshDuration)
 
 	s.testUser = &models.User{
 		ID:    uuid.New(),
@@ -65,7 +64,7 @@ func (s *TokenValidatorTestSuite) SetupTest() {
 
 	// Generate an expired token (manually set expiration in the past)
 	// For testing, we'll use a very short duration
-	expiredManager := jwt.NewManager(os.Getenv("TEST_JWT_SECRET"), -1*time.Hour, -1*time.Hour)
+	expiredManager := jwt.NewManager(s.jwtSecret, -1*time.Hour, -1*time.Hour)
 	expiredTokenModel, err := expiredManager.GenerateToken(s.testUser, constants.TokenTypeRefresh)
 	require.NoError(s.T(), err)
 	s.expiredToken = expiredTokenModel.Value

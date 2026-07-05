@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
 
+	"github.com/breakfront-planner/auth-service/internal/configs"
 	"github.com/breakfront-planner/auth-service/internal/jwt"
 	"github.com/breakfront-planner/auth-service/internal/models"
 	"github.com/breakfront-planner/auth-service/internal/services/mocks"
@@ -36,43 +38,27 @@ func (s *TokenServiceTestSuite) SetupSuite() {
 	err := godotenv.Load("../../.env.test")
 	require.NoError(s.T(), err, "Failed to load .env.test")
 
-	requiredEnvVars := []string{
-		"TEST_JWT_SECRET",
-		"ACCESS_TOKEN_DURATION",
-		"REFRESH_TOKEN_DURATION",
-		"TOKEN_HASHED_VALUE",
-		"TOKEN_TEST_VALUE",
-		"TEST_LOGIN",
-		"TEST_PASS",
-	}
+	tokenCfg := &configs.TokenConfig{}
+	require.NoError(s.T(), env.ParseWithOptions(tokenCfg, env.Options{Prefix: "TEST_"}), "Failed to parse test token configuration")
 
-	envVars := make(map[string]string)
-	var missingVars []string
-	for _, varName := range requiredEnvVars {
-		if os.Getenv(varName) == "" {
-			missingVars = append(missingVars, varName)
-		} else {
-			envVars[varName] = os.Getenv(varName)
-		}
-	}
+	s.accessDuration = tokenCfg.AccessDuration
+	s.refreshDuration = tokenCfg.RefreshDuration
+	s.jwtManager = jwt.NewManager(tokenCfg.JWTSecret, s.accessDuration, s.refreshDuration)
 
-	require.Empty(s.T(), missingVars, "Missing required environment variables: %v", missingVars)
+	s.testHashedValue = os.Getenv("TOKEN_HASHED_VALUE")
+	s.testTokenValue = os.Getenv("TOKEN_TEST_VALUE")
+	require.NotEmpty(s.T(), s.testHashedValue, "TOKEN_HASHED_VALUE must be set in .env.test")
+	require.NotEmpty(s.T(), s.testTokenValue, "TOKEN_TEST_VALUE must be set in .env.test")
 
-	s.accessDuration, err = time.ParseDuration(envVars["ACCESS_TOKEN_DURATION"])
-	require.NoError(s.T(), err, "Failed to parse ACCESS_TOKEN_DURATION")
-
-	s.refreshDuration, err = time.ParseDuration(envVars["REFRESH_TOKEN_DURATION"])
-	require.NoError(s.T(), err, "Failed to parse REFRESH_TOKEN_DURATION")
-
-	s.testHashedValue = envVars["TOKEN_HASHED_VALUE"]
-	s.testTokenValue = envVars["TOKEN_TEST_VALUE"]
-
-	s.jwtManager = jwt.NewManager(envVars["TEST_JWT_SECRET"], s.accessDuration, s.refreshDuration)
+	testLogin := os.Getenv("TEST_LOGIN")
+	testPass := os.Getenv("TEST_PASS")
+	require.NotEmpty(s.T(), testLogin, "TEST_LOGIN must be set in .env.test")
+	require.NotEmpty(s.T(), testPass, "TEST_PASS must be set in .env.test")
 
 	s.testUser = &models.User{
 		ID:           uuid.New(),
-		Login:        envVars["TEST_LOGIN"],
-		PasswordHash: envVars["TEST_PASS"],
+		Login:        testLogin,
+		PasswordHash: testPass,
 	}
 }
 

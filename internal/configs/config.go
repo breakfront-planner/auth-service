@@ -15,6 +15,7 @@ const configPath = ".env"
 type Configuration struct {
 	Credentials CredentialsConfig
 	Token       TokenConfig
+	GRPCServer  GRPCServerConfig
 }
 
 type CredentialsConfig struct {
@@ -28,6 +29,10 @@ type TokenConfig struct {
 	JWTSecret       string        `env:"JWT_SECRET"`
 	AccessDuration  time.Duration `env:"ACCESS_TOKEN_DURATION" envDefault:"10m"`
 	RefreshDuration time.Duration `env:"REFRESH_TOKEN_DURATION" envDefault:"48h"`
+}
+
+type GRPCServerConfig struct {
+	GRPCServerAddress string `env:"GRPC_SERVER_ADDRESS" envDefault:":50051"`
 }
 
 func New() (*Configuration, error) {

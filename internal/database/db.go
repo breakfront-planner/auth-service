@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/breakfront-planner/auth-service/internal/autherrors"
+
+	_ "github.com/lib/pq"
 )
 
 // Connect establishes a connection to the PostgreSQL database using environment variables.

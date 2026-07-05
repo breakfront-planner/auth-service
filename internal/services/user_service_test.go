@@ -215,6 +215,17 @@ func (s *UserServiceTestSuite) TestCheckPasswordWrongLogin() {
 	assert.ErrorContains(s.T(), err, "failed to find user")
 }
 
+func (s *UserServiceTestSuite) TestCheckPasswordUserNotFound() {
+	s.mockUserRepo.EXPECT().
+		FindUser(gomock.Any()).
+		Return(nil, nil)
+
+	err := s.userService.CheckPassword(s.testLogin, s.testPassword)
+
+	assert.Error(s.T(), err)
+	assert.ErrorIs(s.T(), err, autherrors.ErrInvalidCredentials)
+}
+
 func (s *UserServiceTestSuite) TestCheckPasswordWrongPassword() {
 	hashedPassword, err := s.hashService.HashPassword(s.testPassword)
 	require.NoError(s.T(), err)

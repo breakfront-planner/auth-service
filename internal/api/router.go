@@ -10,5 +10,5 @@ func NewRouter(handler *AuthHandler) http.Handler {
 	mux.HandleFunc("POST /refresh", handler.Refresh)
 	mux.HandleFunc("POST /logout", handler.Logout)
 
-	return mux
+	return http.StripPrefix("/auth-api/v1", mux)
 }

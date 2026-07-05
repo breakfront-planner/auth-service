@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/breakfront-planner/auth-service/internal/api"
 	"github.com/breakfront-planner/auth-service/internal/database"
@@ -16,12 +17,17 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/services"
 	"github.com/breakfront-planner/auth-service/internal/validators"
 
-	"os"
+	"context"
+	"os/signal"
+	"syscall"
 
 	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	err := godotenv.Load()
 	if err != nil {

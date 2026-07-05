@@ -85,6 +85,10 @@ func (s *UserService) CheckPassword(login string, password string) error {
 		return autherrors.ErrWrongLogin(err)
 	}
 
+	if user == nil {
+		return autherrors.ErrInvalidCredentials
+	}
+
 	err = s.hashService.ComparePasswords(user.PasswordHash, password)
 	if err != nil {
 		return err

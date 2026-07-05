@@ -76,7 +76,7 @@ func (a *Application) setConfig() error {
 }
 
 func (a *Application) setDatabase() error {
-	db, err := database.Connect()
+	db, err := database.Connect(a.conf.Postgres)
 	if err != nil {
 		return fmt.Errorf("connect: %w", err)
 	}

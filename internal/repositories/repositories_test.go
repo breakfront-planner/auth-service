@@ -2,19 +2,16 @@ package repositories
 
 import (
 	"database/sql"
-
-	_ "github.com/lib/pq"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-
-	"fmt"
 	"os"
 	"time"
 
-	"github.com/breakfront-planner/auth-service/internal/autherrors"
+	"github.com/breakfront-planner/auth-service/internal/configs"
 	"github.com/breakfront-planner/auth-service/internal/database"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type RepositoryTestSuite struct {
@@ -47,38 +44,13 @@ func (s *RepositoryTestSuite) SetupSuite() {
 
 	require.NotEmpty(s.T(), s.TokenHashedValue, "TEST_HASH must be set in .env.test")
 
-	// Connection string for test database
-	requiredEnvVars := []string{"TEST_DB_HOST", "TEST_DB_PORT", "TEST_DB_USER", "TEST_DB_PASSWORD", "TEST_DB_NAME", "TEST_DB_SSLMODE"}
+	// Connection config for test database, read from TEST_DB_* variables
+	pgCfg := &configs.PostgresConfig{}
+	err = env.ParseWithOptions(pgCfg, env.Options{Prefix: "TEST_"})
+	require.NoError(s.T(), err, "Failed to parse test database configuration")
 
-	envVars := make(map[string]string)
-	var missingVars []string
-	for _, varName := range requiredEnvVars {
-		if os.Getenv(varName) == "" {
-			missingVars = append(missingVars, varName)
-		} else {
-			envVars[varName] = os.Getenv(varName)
-		}
-	}
-
-	if len(missingVars) > 0 {
-		err := autherrors.ErrMissingEnvVars(missingVars)
-		require.NoError(s.T(), err, "Failed to get required credentials to test database")
-	}
-
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		envVars["TEST_DB_HOST"],
-		envVars["TEST_DB_PORT"],
-		envVars["TEST_DB_USER"],
-		envVars["TEST_DB_PASSWORD"],
-		envVars["TEST_DB_NAME"],
-		envVars["TEST_DB_SSLMODE"])
-
-	db, err := sql.Open("postgres", dsn)
+	db, err := database.Connect(*pgCfg)
 	require.NoError(s.T(), err, "Failed to connect to test database")
-
-	// Verify connection
-	err = db.Ping()
-	require.NoError(s.T(), err, "Failed to ping test database")
 
 	// Run migrations
 	err = database.RunMigrations(db)

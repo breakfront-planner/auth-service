@@ -7,6 +7,7 @@ JWT-based authentication service for Breakfront Planner with token rotation and 
 
 ## Documentation
 
+- [C4 Diagrams](https://app.eraser.io/workspace/y1JS6lcswmTKvt5Skjoy)
 - [High-Level Design](https://scandalous-speedwell-5d7.notion.site/HLD-Breakfront-Planner-2c101219b91b8012b56dd6b3ac617e39)
 - [ADR-001: JWT Access & Refresh Tokens](https://scandalous-speedwell-5d7.notion.site/ADR-001-JWT-Access-Refresh-Tokens-2d401219b91b8028a9b5e5324b049c0a)
 - [Software Requirements Specification](https://scandalous-speedwell-5d7.notion.site/SRS-2c101219b91b805eab9cff45aa372683)

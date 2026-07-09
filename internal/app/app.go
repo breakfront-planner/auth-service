@@ -9,6 +9,8 @@ import (
 	"net"
 	"os"
 
+	grpcapi "github.com/breakfront-planner/auth-service/internal/api/grpc"
+	"github.com/breakfront-planner/auth-service/internal/api/grpc/interceptors"
 	"github.com/breakfront-planner/auth-service/internal/configs"
 	"github.com/breakfront-planner/auth-service/internal/database"
 	"github.com/breakfront-planner/auth-service/internal/jwt"
@@ -16,6 +18,7 @@ import (
 	"github.com/breakfront-planner/auth-service/internal/services"
 	"github.com/breakfront-planner/auth-service/internal/validators"
 
+	authv1 "github.com/breakfront-planner/proto/gen/go/auth/v1"
 	"google.golang.org/grpc"
 )
 
@@ -117,9 +120,14 @@ func (a *Application) setServer() error {
 	}
 	a.listener = lis
 
-	a.grpcServer = grpc.NewServer()
-	// TODO: register generated AuthService handler once .proto/codegen exist:
-	// authpb.RegisterAuthServiceServer(a.grpcServer, grpcapi.NewAuthHandler(a.authService, a.conf.Credentials))
+	a.grpcServer = grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptors.LoggingUnaryInterceptor(a.logger.With("component", "grpc")),
+			interceptors.RecoveryUnaryInterceptor(a.logger.With("component", "grpc")),
+		),
+	)
+	authHandler := grpcapi.NewAuthHandler(a.authService, &a.conf.Credentials)
+	authv1.RegisterAuthServiceServer(a.grpcServer, authHandler)
 
 	return nil
 }

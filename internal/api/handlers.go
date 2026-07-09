@@ -62,7 +62,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validateCredentials(req, h.credentialsCfg); err != nil {
+	if err := h.credentialsCfg.ValidateCredentials(req.Login, req.Password); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}

@@ -1,10 +1,11 @@
 module github.com/breakfront-planner/auth-service
 
-go 1.25.0
+go 1.25.5
 
 require github.com/lib/pq v1.10.9
 
 require (
+	github.com/breakfront-planner/proto v0.1.0
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0

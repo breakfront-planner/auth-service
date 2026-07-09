@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/breakfront-planner/auth-service/internal/autherrors"
+
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
 )
@@ -24,6 +26,18 @@ type CredentialsConfig struct {
 	LoginMaxLen    int `env:"LOGIN_MAX_LEN" envDefault:"32"`
 	PasswordMinLen int `env:"PASSWORD_MIN_LEN" envDefault:"8"`
 	PasswordMaxLen int `env:"PASSWORD_MAX_LEN" envDefault:"64"`
+}
+
+// ValidateCredentials checks a login/password pair against the configured length bounds.
+// Protocol-agnostic so both the HTTP and gRPC handlers can share it.
+func (c CredentialsConfig) ValidateCredentials(login, password string) error {
+	if len(login) < c.LoginMinLen || len(login) > c.LoginMaxLen {
+		return autherrors.ErrLoginLength(c.LoginMinLen, c.LoginMaxLen)
+	}
+	if len(password) < c.PasswordMinLen || len(password) > c.PasswordMaxLen {
+		return autherrors.ErrPasswordLength(c.PasswordMinLen, c.PasswordMaxLen)
+	}
+	return nil
 }
 
 type TokenConfig struct {
